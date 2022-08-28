@@ -10,9 +10,10 @@ SELECT AVG(Длительность), Альбом FROM Треки
 GROUP BY Альбом;
 
 SELECT i.Название FROM Исполнители i
+WHERE i.Название NOT IN (SELECT i.Название FROM Исполнители i
 LEFT JOIN Альбомы_и_исполнители a_i ON i.id = a_i.Исполнитель
 LEFT JOIN Альбомы a ON a_i.Альбом = a.id
-WHERE a.Год_выпуска != '2020';
+WHERE a.Год_выпуска != '2022');
 
 SELECT DISTINCT c.Название FROM Сборники c
 LEFT JOIN Сборники_и_треки c_t ON c.id = c_t.Сборник
@@ -40,8 +41,9 @@ LEFT JOIN Альбомы a ON a_i.Альбом = a.id
 LEFT JOIN Треки t ON t.Альбом = a.id
 WHERE t.Длительность = (SELECT MIN(Длительность) FROM Треки)
 
-SELECT a.Название, COUNT(t.Название) FROM Альбомы a
+SELECT a.Название, COUNT(t.Название) AS track_count FROM Альбомы a
 JOIN Треки t ON a.id = t.Альбом
 GROUP BY a.Название
-ORDER BY COUNT(t.Название)
-LIMIT 2
+HAVING COUNT(t.Название) = (SELECT MIN(track_count) FROM (SELECT a.Название, COUNT(t.Название) AS track_count FROM Альбомы a
+JOIN Треки t ON a.id = t.Альбом
+GROUP BY a.Название) AS tr_count)
